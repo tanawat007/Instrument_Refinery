@@ -81,6 +81,33 @@
       background: #c7d2fe;
       border-radius: 999px;
     }
+
+    /* Sticky first column styles */
+    .sticky-first-col tbody td:first-child,
+    .sticky-first-col thead th:first-child {
+      position: sticky;
+      left: 0;
+      z-index: 10;
+      background-color: white;
+    }
+
+    .sticky-first-col tbody tr.table-row-hover:hover td:first-child {
+      background-color: rgba(99, 102, 241, 0.04);
+    }
+
+    .sticky-first-col tbody tr:nth-child(odd) td:first-child {
+      background-color: #f8fafc;
+    }
+
+    .sticky-first-col tbody tr:nth-child(even) td:first-child {
+      background-color: #ffffff;
+    }
+
+    .sticky-col {
+      position: sticky;
+      left: 0;
+      z-index: 20;
+    }
   </style>
 </head>
 
@@ -231,10 +258,10 @@
     <!-- ===== DATA TABLE ===== -->
     <div class="glass-card rounded-2xl border border-white/50 shadow-lg overflow-hidden">
       <div class="overflow-x-auto">
-        <table id="data-table" class="table table-zebra w-full">
+        <table id="data-table" class="table table-zebra w-full sticky-first-col">
           <thead>
             <tr class="bg-gradient-to-r from-slate-50 to-slate-100">
-              <th class="text-xs text-slate-500 font-semibold uppercase">
+              <th class="sticky-col text-xs text-slate-500 font-semibold uppercase bg-gradient-to-r from-slate-50 to-slate-100">
                 <i class="fa-solid fa-barcode mr-1 text-primary/60"></i> Tag Number
               </th>
               <th class="text-xs text-slate-500 font-semibold uppercase">
@@ -339,9 +366,9 @@
  
   <!-- ===== VIEW DETAIL MODAL ===== -->
   <dialog id="detail-modal" class="modal modal-bottom sm:modal-middle">
-    <div class="modal-box max-w-2xl p-0 overflow-y-auto bg-gradient-to-br from-white to-slate-50">
+    <div class="modal-box max-w-2xl p-0 bg-gradient-to-br from-white to-slate-50 flex flex-col max-h-[90vh] sm:max-h-none">
       <!-- Modal Header -->
-      <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4 flex items-center justify-between">
+      <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4 flex items-center justify-between flex-shrink-0">
         <h3 class="text-lg font-bold text-white flex items-center gap-2">
           <i class="fa-solid fa-flask-vial"></i> รายละเอียด Field Instrument
         </h3>
@@ -352,13 +379,12 @@
         </form>
       </div>
  
-      <!-- Modal Body -->
-      <div class="p-6 space-y-5">
-        <!-- Image + Code Section -->
+      <!-- Fixed Tag Number Section -->
+      <div class="bg-white border-b border-slate-100 px-6 py-4 flex-shrink-0">
         <div class="flex flex-col sm:flex-row gap-5">
           <div class="flex-shrink-0">
             <div
-              class="w-32 h-32 rounded-2xl overflow-y-auto ring-2 ring-slate-200 bg-slate-50 flex items-center justify-center">
+              class="w-32 h-32 rounded-2xl ring-2 ring-slate-200 bg-slate-50 flex items-center justify-center">
               <img id="detail-image" src="Image\noimage.svg" alt="Chemical" class="w-full h-full object-cover"
                 onerror="this.src='images/noimage.svg'" />
             </div>
@@ -375,9 +401,12 @@
             </div>
           </div>
         </div>
+      </div>
  
+      <!-- Scrollable Container for Details -->
+      <div class="overflow-y-auto flex-1 px-6 py-5">
         <!-- Info Grid -->
-        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+        <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
           <!-- Keeping Area -->
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
             <div class="bg-info/10 text-info p-2.5 rounded-lg">
@@ -502,7 +531,7 @@
       </div>
  
       <!-- Modal Footer -->
-      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end">
+      <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex justify-end flex-shrink-0">
         <form method="dialog">
           <button class="btn btn-sm btn-ghost gap-1.5">
             <i class="fa-solid fa-xmark"></i> ปิด
