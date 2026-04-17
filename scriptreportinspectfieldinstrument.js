@@ -2,7 +2,7 @@
  
 // ⚠️ สำคัญมาก: นำ URL ที่ได้จากการ Deploy ในขั้นตอนที่ 2 มาวางที่นี่
 // คำแนะนำ: Deploy Google Apps Script แบบ "Anyone can access" แล้วนำ URL มาใส่ตรงนี้
-const ORIGINAL_URL = 'https://script.google.com/macros/s/AKfycbwSIYw2GZ-oYXuawLw-gjrB0CfIXSQwZQt-Ufkp1YeM0Iuzi-nooSYk4e_EoKsVkhw/exec';
+const ORIGINAL_URL = 'https://script.google.com/macros/s/AKfycbxgCqk55fZP6dmZvc3uB1RzuVp1YydqinlUr68BZ32LlRftz2WrdL4x-U6etVvgI7cW/exec';
  
  
 // ใช้ URL โดยตรงจาก Google Apps Script
@@ -11,24 +11,37 @@ const WEB_APP_URL = ORIGINAL_URL;
 // --- DOM Elements: ประกาศตัวแปร ---
 const form = document.getElementById('data-form');
 const recordIdInput = document.getElementById('record-id');
-const materialCodeInput = document.getElementById('material_code');
+const materialCodeInput = document.getElementById('materialCode');
 const descriptionInput = document.getElementById('description');
-const imageBeforeInput = document.getElementById('image-before');
-const keepingAreaInput = document.getElementById('keepingArea');
-const quantityInput = document.getElementById('quantity');
-const lifttimeInput = document.getElementById('lifttime');
-const leakageInput = document.getElementById('leakage');
-const failactionInput = document.getElementById('failaction');
-const objecttypeInput = document.getElementById('objecttype');
-const classtypeInput = document.getElementById('classtype');
-const scalerangeInput = document.getElementById('scalerange');
-const calibrationrangeInput = document.getElementById('calibrationrange');
-const outputrangeInput = document.getElementById('outputrange');
-const equipmentclassInput = document.getElementById('equipmentclass');
-const layerofprotectionInput = document.getElementById('layerofprotection');
-const dateOfUseInput = document.getElementById('dateOfUse');
-const expiredDateInput = document.getElementById('expiredDate');
-const msdsInput = document.getElementById('MSDS');
+const instrumentTypeInput = document.getElementById('instrumenttype');
+const manufacturerInput = document.getElementById('manufacturer');
+const modelInput = document.getElementById('model');
+const serialNumberInput = document.getElementById('serialnumber');
+const plantInput = document.getElementById('plant');
+const workorderInput = document.getElementById('workorder');
+const winumberInput = document.getElementById('winumber');
+const waterproofInput = document.getElementById('waterproof');
+const bodycaseInput = document.getElementById('bodycase');
+const boltnutInput = document.getElementById('boltnut');
+const labelInput = document.getElementById('label');
+const terminalInput = document.getElementById('terminal');
+const cableglandInput = document.getElementById('cablegland');
+const conduitsupportInput = document.getElementById('conduitsupport');
+const leakedInput = document.getElementById('leaked');
+const vibrationInput = document.getElementById('vibration');
+const oilsealInput = document.getElementById('oilseal');
+const indicatorpointerInput = document.getElementById('indicatorpointer');
+const insulationtracingInput = document.getElementById('insulationtracing');
+const impulselineInput = document.getElementById('impulseline');
+const capillarytubeInput = document.getElementById('capillarytube');
+const positionInput = document.getElementById('position');
+const testingInput = document.getElementById('testing');
+const inspectByInput = document.getElementById('inspectby');
+const inspectDateInput = document.getElementById('inspectdate');
+const approvedByInput = document.getElementById('approvedby');
+const approvedDateInput = document.getElementById('approveddate');
+const remarkInput = document.getElementById('remark');
+const overallStatusInput = document.getElementById('overallstatus');
 const submitBtn = document.getElementById('submit-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const tableBody = document.getElementById('table-body');
@@ -52,32 +65,6 @@ const showingStart = document.getElementById('showing-start');
 const showingEnd = document.getElementById('showing-end');
 const totalItems = document.getElementById('total-items');
  
-// --- Image Preview Functions ---
-imageBeforeInput?.addEventListener('input', function () {
-  previewImage(this.value, 'preview-before', 'img-before');
-});
- 
-function previewImage(url, previewId, imgId) {
-  const preview = document.getElementById(previewId);
-  const img = document.getElementById(imgId);
-  if (!preview || !img) return;
- 
-  if (url && isValidUrl(url)) {
-    img.src = url;
-    preview.classList.remove('hidden');
-  } else {
-    preview.classList.add('hidden');
-  }
-}
- 
-function isValidUrl(string) {
-  try {
-    new URL(string);
-    return true;
-  } catch (_) {
-    return false;
-  }
-}
  
 // --- Utility: Date helpers ---
 function parseDate(val) {
@@ -111,6 +98,24 @@ function toInputDate(val) {
   return `${y}-${m}-${day}`;
 }
  
+function getSelectedRadioValue(name) {
+  const radio = document.querySelector(`input[name="${name}"]:checked`);
+  return radio ? radio.value.trim() : '';
+}
+ 
+function getInputOrRadioValue(name, inputElement) {
+  if (inputElement && inputElement.value.trim()) {
+    return inputElement.value.trim();
+  }
+  return getSelectedRadioValue(name);
+}
+ 
+function setRadioValue(name, value) {
+  if (!value) return;
+  const radio = document.querySelector(`input[name="${name}"][value="${value}"]`);
+  if (radio) radio.checked = true;
+}
+ 
 function getExpiryBadge(dateStr) {
   const days = daysUntil(dateStr);
   if (days === null) return '<span class="badge badge-ghost badge-sm">ไม่ระบุ</span>';
@@ -127,12 +132,12 @@ function updateStats() {
   const areasSet = new Set();
  
   allData.forEach(row => {
-    const days = daysUntil(row.ExpiredDate);
+    const days = daysUntil(row.inspectdate);
     if (days !== null) {
       if (days < 0) expired++;
       else if (days <= 30) expiring++;
     }
-    const area = (row.KeepingArea || '').trim();
+    const area = (row.plant || '').trim();
     if (area) areasSet.add(area);
   });
  
@@ -179,14 +184,46 @@ function applyFilters() {
   filteredData = allData.filter(row => {
     // Search
     if (query) {
-      const searchFields = [row.MaterialCode, row.Description, row.KeepingArea, row.objecttype, row.classtype, row.scalerange, row.calibrationrange, row.outputrange, row.equipmentclass, row.layerofprotection, row.MSDS].map(v => String(v || '').toLowerCase());
+      const searchFields = [
+        row.MaterialCode,
+        row.description,
+        row.instrumenttype,
+        row.manufacturer,
+        row.model,
+        row.serialnumber,
+        row.plant,
+        row.workorder,
+        row.winumber,
+        row.waterproof,
+        row.bodycase,
+        row.boltnut,
+        row.label,
+        row.terminal,
+        row.cablegland,
+        row.conduitsupport,
+        row.leaked,
+        row.vibration,
+        row.oilseal,
+        row.indicatorpointer,
+        row.insulationtracing,
+        row.impulseline,
+        row.capillarytube,
+        row.position,
+        row.testing,
+        row.inspectby,
+        row.inspectdate,
+        row.approvedby,
+        row.approveddate,
+        row.remark,
+        row.overallstatus
+      ].map(v => String(v || '').toLowerCase());
       if (!searchFields.some(f => f.includes(query))) return false;
     }
     // Area filter
-    if (areaFilter && (row.KeepingArea || '').trim() !== areaFilter) return false;
+    if (areaFilter && (row.plant || '').trim() !== areaFilter) return false;
     // Status filter
     if (statusFilter) {
-      const days = daysUntil(row.ExpiredDate);
+      const days = daysUntil(row.inspectdate);
       if (statusFilter === 'expired' && (days === null || days >= 0)) return false;
       if (statusFilter === 'expiring' && (days === null || days < 0 || days > 30)) return false;
       if (statusFilter === 'active' && (days !== null && days < 0)) return false;
@@ -226,11 +263,11 @@ async function fetchData() {
     if (result.success) {
       allData = result.data;
  
-      // เรียงข้อมูลแบบ Descending (ใหม่สุดอยู่บน) โดยใช้ Timestamp
-      // เพื่อให้รายการที่เพิ่งบันทึกล่าสุดแสดงเป็นรายการแรกเสมอ
+      // เรียงข้อมูลแบบ Descending (ใหม่สุดอยู่บน) โดยใช้ inspectdate
+      // เพื่อให้รายการที่เพิ่งบันทึลล่าสุดแสดงเป็นรายการแรกเสมอ
       allData.sort((a, b) => {
-        const dateA = new Date(a.Timestamp || 0);
-        const dateB = new Date(b.Timestamp || 0);
+        const dateA = parseDate(a.inspectdate)?.getTime() || 0;
+        const dateB = parseDate(b.inspectdate)?.getTime() || 0;
         return dateB - dateA; // DESC: ใหม่สุดก่อน
       });
  
@@ -285,83 +322,67 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.className = 'table-row-hover transition-colors';
  
-    const imgSrc = row.ImageBefore || row['ImageBefore '] || noImageUrl;
-    const msdsVal = (row.MSDS || '').trim();
-    let msdsLink;
-    if (msdsVal && msdsVal.toLowerCase() !== 'na') {
-      msdsLink = `<a href="${escapeHtml(msdsVal)}" target="_blank" class="btn btn-xs btn-outline btn-warning gap-1">
-           <i class="fa-solid fa-file-shield text-[10px]"></i> ดู Specification
-         </a>`;
-    } else if (msdsVal.toLowerCase() === 'na') {
-      msdsLink = '<span class="badge badge-ghost badge-sm">NA</span>';
-    } else {
-      msdsLink = '<span class="text-slate-300 text-xs">-</span>';
-    }
- 
     tr.innerHTML = `
       <td class="font-mono font-semibold text-primary text-sm">${escapeHtml(row.MaterialCode || '-')}</td>
-      <td>
-        <div class="avatar">
-          <div class="w-12 h-12 rounded-lg ring-1 ring-slate-200 cursor-pointer hover:ring-primary transition-all"
-               onclick="showImageModal('${escapeAttr(imgSrc)}')">
-            <img src="${escapeAttr(imgSrc)}" alt="Chemical" onerror="this.src='${noImageUrl}'" />
-          </div>
-        </div>
-      </td>
-      <td>
-        <span class="badge badge-outline badge-secondary badge-sm gap-1">
-          <i class="fa-solid fa-location-dot text-[10px]"></i> ${escapeHtml(row.KeepingArea || '-')}
-        </span>
-      </td>
-
-      <td class="font-semibold text-sm">${escapeHtml(row.Description || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.objecttype || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.classtype || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.scalerange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.calibrationrange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.outputrange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.equipmentclass || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.layerofprotection || '-')}</td>
-      <td>${getExpiryBadge(row.ExpiredDate)}</td>
-      <td>${msdsLink}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.description || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.instrumenttype || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.plant || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.workorder || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.remark || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.overallstatus || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.inspectby || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.approvedby || '-')}</td>
+      <td class="font-semibold text-sm">${formatDate(row.approveddate)}</td>
       <td class="text-right">
         <div class="flex justify-end gap-1">
           <button class="view-btn btn btn-xs btn-ghost text-info tooltip tooltip-left" data-tip="ดูรายละเอียด"
                   data-id="${escapeAttr(row.ID)}"
                   data-material-code="${escapeAttr(row.MaterialCode || '')}"
-                  data-description="${escapeAttr(row.Description || '')}"
-                  data-image-before="${escapeAttr(row.ImageBefore || row['ImageBefore '] || '')}"
-                  data-keeping-area="${escapeAttr(row.KeepingArea || '')}"
-                  data-objecttype="${escapeAttr(row.objecttype || '')}"
-                  data-classtype="${escapeAttr(row.classtype || '')}"
-                  data-scalerange="${escapeAttr(row.scalerange || '')}"
-                  data-calibrationrange="${escapeAttr(row.calibrationrange || '')}"
-                  data-outputrange="${escapeAttr(row.outputrange || '')}"
-                  data-equipmentclass="${escapeAttr(row.equipmentclass || '')}"
-                  data-layerofprotection="${escapeAttr(row.layerofprotection || '')}"
-                  data-date-of-use="${escapeAttr(toInputDate(row.DateOfUse))}"
-                  data-expired-date="${escapeAttr(toInputDate(row.ExpiredDate))}"
-                  data-msds="${escapeAttr(row.MSDS || '')}"
-                  data-timestamp="${escapeAttr(row.Timestamp || '')}">
+                  data-description="${escapeAttr(row.description || '')}"
+                  data-instrumenttype="${escapeAttr(row.instrumenttype || '')}"
+                  data-plant="${escapeAttr(row.plant || '')}"
+                  data-workorder="${escapeAttr(row.workorder || '')}"
+                  data-remark="${escapeAttr(row.remark || '')}"
+                  data-overallstatus="${escapeAttr(row.overallstatus || '')}"
+                  data-inspectby="${escapeAttr(row.inspectby || '')}"
+                  data-approvedby="${escapeAttr(row.approvedby || '')}"
+                  data-approveddate="${escapeAttr(toInputDate(row.approveddate))}">
             <i class="fa-solid fa-eye"></i>
           </button>
           ${canEdit() ? `
           <button class="edit-btn btn btn-xs btn-ghost text-primary tooltip tooltip-left" data-tip="แก้ไข"
                   data-id="${escapeAttr(row.ID)}"
                   data-material-code="${escapeAttr(row.MaterialCode || '')}"
-                  data-description="${escapeAttr(row.Description || '')}"
-                  data-image-before="${escapeAttr(row.ImageBefore || row['ImageBefore '] || '')}"
-                  data-keeping-area="${escapeAttr(row.KeepingArea || '')}"
-                  data-objecttype="${escapeAttr(row.objecttype || '')}"
-                  data-classtype="${escapeAttr(row.classtype || '')}"
-                  data-scalerange="${escapeAttr(row.scalerange || '')}"
-                  data-calibrationrange="${escapeAttr(row.calibrationrange || '')}"
-                  data-outputrange="${escapeAttr(row.outputrange || '')}"
-                  data-equipmentclass="${escapeAttr(row.equipmentclass || '')}"
-                  data-layerofprotection="${escapeAttr(row.layerofprotection || '')}"
-                  data-date-of-use="${escapeAttr(toInputDate(row.DateOfUse))}"
-                  data-expired-date="${escapeAttr(toInputDate(row.ExpiredDate))}"
-                  data-msds="${escapeAttr(row.MSDS || '')}">
+                  data-description="${escapeAttr(row.description || '')}"
+                  data-instrumenttype="${escapeAttr(row.instrumenttype || '')}"
+                  data-manufacturer="${escapeAttr(row.manufacturer || '')}"
+                  data-model="${escapeAttr(row.model || '')}"
+                  data-serialnumber="${escapeAttr(row.serialnumber || '')}"
+                  data-plant="${escapeAttr(row.plant || '')}"
+                  data-workorder="${escapeAttr(row.workorder || '')}"
+                  data-winumber="${escapeAttr(row.winumber || '')}"
+                  data-waterproof="${escapeAttr(row.waterproof || '')}"
+                  data-bodycase="${escapeAttr(row.bodycase || '')}"
+                  data-boltnut="${escapeAttr(row.boltnut || '')}"
+                  data-label="${escapeAttr(row.label || '')}"
+                  data-terminal="${escapeAttr(row.terminal || '')}"
+                  data-cablegland="${escapeAttr(row.cablegland || '')}"
+                  data-conduitsupport="${escapeAttr(row.conduitsupport || '')}"
+                  data-leaked="${escapeAttr(row.leaked || '')}"
+                  data-vibration="${escapeAttr(row.vibration || '')}"
+                  data-oilseal="${escapeAttr(row.oilseal || '')}"
+                  data-indicatorpointer="${escapeAttr(row.indicatorpointer || '')}"
+                  data-insulationtracing="${escapeAttr(row.insulationtracing || '')}"
+                  data-impulseline="${escapeAttr(row.impulseline || '')}"
+                  data-capillarytube="${escapeAttr(row.capillarytube || '')}"
+                  data-position="${escapeAttr(row.position || '')}"
+                  data-testing="${escapeAttr(row.testing || '')}"
+                  data-inspectby="${escapeAttr(row.inspectby || '')}"
+                  data-inspectdate="${escapeAttr(toInputDate(row.inspectdate))}"
+                  data-approvedby="${escapeAttr(row.approvedby || '')}"
+                  data-approveddate="${escapeAttr(toInputDate(row.approveddate))}"
+                  data-remark="${escapeAttr(row.remark || '')}"
+                  data-overallstatus="${escapeAttr(row.overallstatus || '')}">
             <i class="fa-solid fa-pen-to-square"></i>
           </button>
           ` : ''}
@@ -388,18 +409,35 @@ function renderTable() {
         this.dataset.id,
         this.dataset.materialCode,
         this.dataset.description,
-        this.dataset.imageBefore,
-        this.dataset.keepingArea,
-        this.dataset.objecttype,
-        this.dataset.classtype,
-        this.dataset.scalerange,
-        this.dataset.calibrationrange,
-        this.dataset.outputrange,
-        this.dataset.equipmentclass,
-        this.dataset.layerofprotection,
-        this.dataset.dateOfUse,
-        this.dataset.expiredDate,
-        this.dataset.msds
+        this.dataset.instrumenttype,
+        this.dataset.manufacturer,
+        this.dataset.model,
+        this.dataset.serialnumber,
+        this.dataset.plant,
+        this.dataset.workorder,
+        this.dataset.winumber,
+        this.dataset.waterproof,
+        this.dataset.bodycase,
+        this.dataset.boltnut,
+        this.dataset.label,
+        this.dataset.terminal,
+        this.dataset.cablegland,
+        this.dataset.conduitsupport,
+        this.dataset.leaked,
+        this.dataset.vibration,
+        this.dataset.oilseal,
+        this.dataset.indicatorpointer,
+        this.dataset.insulationtracing,
+        this.dataset.impulseline,
+        this.dataset.capillarytube,
+        this.dataset.position,
+        this.dataset.testing,
+        this.dataset.inspectby,
+        this.dataset.inspectdate,
+        this.dataset.approvedby,
+        this.dataset.approveddate,
+        this.dataset.remark,
+        this.dataset.overallstatus
       );
     });
   });
@@ -439,58 +477,67 @@ if (form) {
     e.preventDefault();
     const recordId = recordIdInput.value;
     const isUpdating = !!recordId;
- 
+
     // เตรียมข้อมูล
     const params = {
       action: isUpdating ? 'update' : 'create',
       materialCode: materialCodeInput?.value.trim() || '',
       description: descriptionInput?.value.trim() || '',
-      imageBefore: imageBeforeInput?.value.trim() || '',
-      keepingArea: keepingAreaInput?.value.trim() || '',
-      objecttype: objecttypeInput?.value.trim() || '',
-      classtype: classtypeInput?.value.trim() || '',
-      scalerange: scalerangeInput?.value.trim() || '',
-      calibrationrange: calibrationrangeInput?.value.trim() || '',
-      outputrange: outputrangeInput?.value.trim() || '',
-      equipmentclass: equipmentclassInput?.value.trim() || '',
-      layerofprotection: layerofprotectionInput?.value.trim() || '',
-      dateOfUse: dateOfUseInput?.value || '',
-      expiredDate: expiredDateInput?.value || '',
-      msds: msdsInput?.value.trim() || ''
+      instrumenttype: instrumentTypeInput?.value.trim() || '',
+      manufacturer: manufacturerInput?.value.trim() || '',
+      model: modelInput?.value.trim() || '',
+      serialnumber: serialNumberInput?.value.trim() || '',
+      plant: plantInput?.value.trim() || '',
+      workorder: workorderInput?.value.trim() || '',
+      winumber: winumberInput?.value.trim() || '',
+      waterproof: getInputOrRadioValue('waterproof', waterproofInput),
+      bodycase: getInputOrRadioValue('bodycase', bodycaseInput),
+      boltnut: getInputOrRadioValue('boltnut', boltnutInput),
+      label: getInputOrRadioValue('label', labelInput),
+      terminal: getInputOrRadioValue('terminal', terminalInput),
+      cablegland: getInputOrRadioValue('cablegland', cableglandInput),
+      conduitsupport: getInputOrRadioValue('conduitsupport', conduitsupportInput),
+      leaked: getInputOrRadioValue('leaked', leakedInput),
+      vibration: getInputOrRadioValue('vibration', vibrationInput),
+      oilseal: getInputOrRadioValue('oilseal', oilsealInput),
+      indicatorpointer: getInputOrRadioValue('indicatorpointer', indicatorpointerInput),
+      insulationtracing: getInputOrRadioValue('insulationtracing', insulationtracingInput),
+      impulseline: getInputOrRadioValue('impulseline', impulselineInput),
+      capillarytube: getInputOrRadioValue('capillarytube', capillarytubeInput),
+      position: getInputOrRadioValue('position', positionInput),
+      testing: getInputOrRadioValue('testing', testingInput),
+      inspectby: inspectByInput?.value.trim() || '',
+      inspectdate: inspectDateInput?.value || '',
+      approvedby: approvedByInput?.value.trim() || '',
+      approveddate: approvedDateInput?.value || '',
+      remark: remarkInput?.value.trim() || '',
+      overallstatus: overallStatusInput?.value.trim() || ''
     };
- 
+
     if (isUpdating) {
       params.id = recordId;
     }
- 
+
     submitBtn.disabled = true;
     submitBtn.innerHTML = '<span class="loading loading-spinner loading-sm"></span> กำลังบันทึก...';
- 
+
     try {
-      console.log('Sending data:', params);
- 
-      // ใช้ POST เพื่อรองรับ payload ขนาดใหญ่ (เช่น base64 image)
-      // ใช้ Content-Type: text/plain เพื่อหลีกเลี่ยง CORS preflight
       const response = await fetch(WEB_APP_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
         body: JSON.stringify(params),
         redirect: 'follow'
       });
- 
-      console.log('Response status:', response.status);
- 
+
       if (!response.ok) {
         throw new Error(`HTTP Error: ${response.status} - ${response.statusText}`);
       }
- 
+
       const result = await response.json();
-      console.log('Response data:', result);
- 
+
       if (result && result.success === true) {
         console.log('บันทึกสำเร็จ');
- 
-        // Toast success
+
         const Toast = Swal.mixin({
           toast: true,
           position: 'top-end',
@@ -506,18 +553,15 @@ if (form) {
             toast.onmouseleave = Swal.resumeTimer;
           }
         });
- 
+
         await Toast.fire({
           icon: 'success',
           title: isUpdating ? 'แก้ไขข้อมูลสำเร็จ!' : 'เพิ่มข้อมูลสำเร็จ!',
           text: 'กำลังกลับไปหน้าหลัก...'
         });
- 
+
         resetForm();
- 
-        // Redirect กลับไปหน้าหลัก
-        window.location.href = '01_fieldinstrument.html';
- 
+        window.location.href = '061_reportinspectfieldinstrument.html';
       } else {
         const errorMsg = result.message || 'ไม่สามารถบันทึกข้อมูลได้';
         const ToastError = Swal.mixin({
@@ -562,36 +606,67 @@ if (form) {
     }
   });
 }
- 
+
 // 4. เตรียมฟอร์มสำหรับแก้ไข
-function editRecord(id, materialCode, description, imageBefore, keepingArea, objecttype, classtype, scalerange, calibrationrange, outputrange, equipmentclass, layerofprotection, dateOfUse, expiredDate, msds) {
+function editRecord(id, materialCode, description, instrumenttype, manufacturer, model, serialnumber, plant, workorder, winumber, waterproof, bodycase, boltnut, label, terminal, cablegland, conduitsupport, leaked, vibration, oilseal, indicatorpointer, insulationtracing, impulseline, capillarytube, position, testing, inspectby, inspectdate, approvedby, approveddate, remark, overallstatus) {
   // ถ้าอยู่หน้า index ให้ redirect ไปหน้า createForm โดยเก็บข้อมูลใน sessionStorage
   // (ไม่ใช้ query params เพราะข้อมูลเช่น base64 image ทำให้ URL ยาวเกินไป → 431 error)
   if (!form) {
     sessionStorage.setItem('editRecord', JSON.stringify({
-      id, materialCode, description, imageBefore, keepingArea, objecttype, classtype, scalerange, calibrationrange, outputrange, equipmentclass, layerofprotection, dateOfUse, expiredDate, msds
+      id, materialCode, description, instrumenttype, manufacturer, model, serialnumber, plant, workorder, winumber, waterproof, bodycase, boltnut, label, terminal, cablegland, conduitsupport, leaked, vibration, oilseal, indicatorpointer, insulationtracing, impulseline, capillarytube, position, testing, inspectby, inspectdate, approvedby, approveddate, remark, overallstatus
     }));
-    window.location.href = 'createform_filedinstrument.html?edit=1';
+    window.location.href = 'createreport_fieldinstrument.html?edit=1';
     return;
   }
  
   recordIdInput.value = id;
   if (materialCodeInput) materialCodeInput.value = materialCode || '';
   if (descriptionInput) descriptionInput.value = description || '';
-  if (imageBeforeInput) imageBeforeInput.value = imageBefore || '';
-  if (keepingAreaInput) keepingAreaInput.value = keepingArea || '';
-  if (objecttypeInput) objecttypeInput.value = objecttype || '';
-  if (classtypeInput) classtypeInput.value = classtype || '';
-  if (scalerangeInput) scalerangeInput.value = scalerange || '';
-  if (calibrationrangeInput) calibrationrangeInput.value = calibrationrange || '';
-  if (outputrangeInput) outputrangeInput.value = outputrange || '';
-  if (equipmentclassInput) equipmentclassInput.value = equipmentclass || '';
-  if (layerofprotectionInput) layerofprotectionInput.value = layerofprotection || '';
-  if (dateOfUseInput) dateOfUseInput.value = toInputDate(dateOfUse) || dateOfUse || '';
-  if (expiredDateInput) expiredDateInput.value = toInputDate(expiredDate) || expiredDate || '';
-  if (msdsInput) msdsInput.value = msds || '';
- 
-  if (imageBefore) previewImage(imageBefore, 'preview-before', 'img-before');
+  if (instrumentTypeInput) instrumentTypeInput.value = instrumenttype || '';
+  if (manufacturerInput) manufacturerInput.value = manufacturer || '';
+  if (modelInput) modelInput.value = model || '';
+  if (serialNumberInput) serialNumberInput.value = serialnumber || '';
+  if (plantInput) plantInput.value = plant || '';
+  if (workorderInput) workorderInput.value = workorder || '';
+  if (winumberInput) winumberInput.value = winumber || '';
+  if (waterproofInput) waterproofInput.value = waterproof || '';
+  setRadioValue('waterproof', waterproof);
+  if (bodycaseInput) bodycaseInput.value = bodycase || '';
+  setRadioValue('bodycase', bodycase);
+  if (boltnutInput) boltnutInput.value = boltnut || '';
+  setRadioValue('boltnut', boltnut);
+  if (labelInput) labelInput.value = label || '';
+  setRadioValue('label', label);
+  if (terminalInput) terminalInput.value = terminal || '';
+  setRadioValue('terminal', terminal);
+  if (cableglandInput) cableglandInput.value = cablegland || '';
+  setRadioValue('cablegland', cablegland);
+  if (conduitsupportInput) conduitsupportInput.value = conduitsupport || '';
+  setRadioValue('conduitsupport', conduitsupport);
+  if (leakedInput) leakedInput.value = leaked || '';
+  setRadioValue('leaked', leaked);
+  if (vibrationInput) vibrationInput.value = vibration || '';
+  setRadioValue('vibration', vibration);
+  if (oilsealInput) oilsealInput.value = oilseal || '';
+  setRadioValue('oilseal', oilseal);
+  if (indicatorpointerInput) indicatorpointerInput.value = indicatorpointer || '';
+  setRadioValue('indicatorpointer', indicatorpointer);
+  if (insulationtracingInput) insulationtracingInput.value = insulationtracing || '';
+  setRadioValue('insulationtracing', insulationtracing);
+  if (impulselineInput) impulselineInput.value = impulseline || '';
+  setRadioValue('impulseline', impulseline);
+  if (capillarytubeInput) capillarytubeInput.value = capillarytube || '';
+  setRadioValue('capillarytube', capillarytube);
+  if (positionInput) positionInput.value = position || '';
+  setRadioValue('position', position);
+  if (testingInput) testingInput.value = testing || '';
+  setRadioValue('testing', testing);
+  if (inspectByInput) inspectByInput.value = inspectby || '';
+  if (inspectDateInput) inspectDateInput.value = toInputDate(inspectdate) || inspectdate || '';
+  if (approvedByInput) approvedByInput.value = approvedby || '';
+  if (approvedDateInput) approvedDateInput.value = toInputDate(approveddate) || approveddate || '';
+  if (remarkInput) remarkInput.value = remark || '';
+  if (overallStatusInput) overallStatusInput.value = overallstatus || '';
  
   if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> อัปเดตข้อมูล';
   if (cancelBtn) cancelBtn.classList.remove('hidden');
@@ -610,18 +685,35 @@ if (form) {
           data.id,
           data.materialCode,
           data.description,
-          data.imageBefore,
-          data.keepingArea,
-          data.objecttype,
-          data.classtype,
-          data.scalerange,
-          data.calibrationrange,
-          data.outputrange,
-          data.equipmentclass,
-          data.layerofprotection,
-          data.dateOfUse,
-          data.expiredDate,
-          data.msds
+          data.instrumenttype,
+          data.manufacturer,
+          data.model,
+          data.serialnumber,
+          data.plant,
+          data.workorder,
+          data.winumber,
+          data.waterproof,
+          data.bodycase,
+          data.boltnut,
+          data.label,
+          data.terminal,
+          data.cablegland,
+          data.conduitsupport,
+          data.leaked,
+          data.vibration,
+          data.oilseal,
+          data.indicatorpointer,
+          data.insulationtracing,
+          data.impulseline,
+          data.capillarytube,
+          data.position,
+          data.testing,
+          data.inspectby,
+          data.inspectdate,
+          data.approvedby,
+          data.approveddate,
+          data.remark,
+          data.overallstatus
         );
         sessionStorage.removeItem('editRecord');
       } catch (e) {
@@ -824,74 +916,41 @@ function viewRecord(data) {
   const modal = document.getElementById('detail-modal');
   if (!modal) return;
  
-  const noImg = 'images/noimage.svg';
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
-  const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
  
-  // Image
-  const imgEl = document.getElementById('detail-image');
-  if (imgEl) {
-    imgEl.src = data.imageBefore || noImg;
-    imgEl.onerror = function () { this.src = noImg; };
-  }
- 
-  // Basic info
   setEl('detail-code', data.materialCode || '-');
   setEl('detail-description', data.description || '-');
-  setEl('detail-area', data.keepingArea || '-');
-  // setEl('detail-quantity', data.quantity || '-'); // Commented out in HTML
-  // setEl('detail-lifttime', data.lifttime || '-'); // Commented out in HTML
-  // setEl('detail-leakage', data.leakage || '-'); // Commented out in HTML
-  // setEl('detail-failaction', data.failaction || '-'); // Commented out in HTML
-  setEl('detail-objecttype', data.objecttype || '-');
-  setEl('detail-classtype', data.classtype || '-');
-  setEl('detail-scalerange', data.scalerange || '-');
-  setEl('detail-calibrationrange', data.calibrationrange || '-');
-  setEl('detail-outputrange', data.outputrange || '-');
-  setEl('detail-equipmentclass', data.equipmentclass || '-');
-  setEl('detail-layerofprotection', data.layerofprotection || '-');
-  setEl('detail-dateOfUse', formatDate(data.dateOfUse));
-  setEl('detail-expiredDate', formatDate(data.expiredDate));
-  setEl('detail-timestamp', data.timestamp ? formatDate(data.timestamp) : '-');
- 
-  // Expiry badge
-  setHtml('detail-expiry-badge', getExpiryBadge(data.expiredDate));
- 
-  // MSDS
-  const msdsVal = (data.msds || '').trim();
-  if (msdsVal && msdsVal.toLowerCase() !== 'na') {
-    setHtml('detail-msds',
-      `<a href="${escapeAttr(msdsVal)}" target="_blank" class="link link-primary text-sm gap-1">
-         <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> เปิดเอกสาร
-       </a>`);
-  } else if (msdsVal.toLowerCase() === 'na') {
-    setEl('detail-msds', 'NA');
-  } else {
-    setEl('detail-msds', 'ไม่มี');
-  }
+  setEl('detail-instrumenttype', data.instrumenttype || '-');
+  setEl('detail-manufacturer', data.manufacturer || '-');
+  setEl('detail-model', data.model || '-');
+  setEl('detail-serialnumber', data.serialnumber || '-');
+  setEl('detail-plant', data.plant || '-');
+  setEl('detail-workorder', data.workorder || '-');
+  setEl('detail-winumber', data.winumber || '-');
+  setEl('detail-waterproof', data.waterproof || '-');
+  setEl('detail-bodycase', data.bodycase || '-');
+  setEl('detail-boltnut', data.boltnut || '-');
+  setEl('detail-label', data.label || '-');
+  setEl('detail-terminal', data.terminal || '-');
+  setEl('detail-cablegland', data.cablegland || '-');
+  setEl('detail-conduitsupport', data.conduitsupport || '-');
+  setEl('detail-leaked', data.leaked || '-');
+  setEl('detail-vibration', data.vibration || '-');
+  setEl('detail-oilseal', data.oilseal || '-');
+  setEl('detail-indicatorpointer', data.indicatorpointer || '-');
+  setEl('detail-insulationtracing', data.insulationtracing || '-');
+  setEl('detail-impulseline', data.impulseline || '-');
+  setEl('detail-capillarytube', data.capillarytube || '-');
+  setEl('detail-position', data.position || '-');
+  setEl('detail-testing', data.testing || '-');
+  setEl('detail-inspectby', data.inspectby || '-');
+  setEl('detail-inspectdate', formatDate(data.inspectdate));
+  setEl('detail-approvedby', data.approvedby || '-');
+  setEl('detail-approveddate', formatDate(data.approveddate));
+  setEl('detail-remark', data.remark || '-');
+  setEl('detail-overallstatus', data.overallstatus || '-');
  
   modal.showModal();
 }
  
-// ฟังก์ชันแสดงรูปภาพขยาย (ใช้ DaisyUI modal ถ้ามี มิฉะนั้นใช้ SweetAlert)
-function showImageModal(imageUrl) {
-  const modal = document.getElementById('image-modal');
-  const modalImg = document.getElementById('modal-image');
- 
-  if (modal && modalImg) {
-    modalImg.src = imageUrl;
-    modalImg.onerror = function () { this.src = 'images/noimage.svg'; };
-    modal.showModal();
-  } else {
-    Swal.fire({
-      imageUrl: imageUrl,
-      imageAlt: 'Chemical Image',
-      showConfirmButton: false,
-      showCloseButton: true,
-      width: '80%',
-      background: '#f8fafc',
-      customClass: { image: 'rounded-xl' }
-    });
-  }
-}
  

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Local Gauge — Instrument Refinery</title>
+  <title>Report — Instrument Refinery</title>
 
   <!-- Tailwind CSS + DaisyUI -->
   <link href="https://cdn.jsdelivr.net/npm/daisyui@4.12.14/dist/full.min.css" rel="stylesheet" />
@@ -115,23 +115,23 @@
         <i class="fa-solid fa-gauge-high text-white text-xl"></i>
       </div>
       <div>
-        <h1 class="text-lg md:text-xl font-extrabold text-slate-800 leading-tight tracking-tight">Local Gauge</h1>
+        <h1 class="text-lg md:text-xl font-extrabold text-slate-800 leading-tight tracking-tight">Report Inspect Field Instrument</h1>
         <p class="text-[11px] text-slate-400 -mt-0.5 hidden sm:block">Instrument Refinery</p>
       </div>
     </div>
     <div class="flex-none gap-2">
       <div class="form-control hidden md:flex">
         <div class="join">
-          <input id="search-input" type="text" placeholder="ค้นหา Local Gauge..."
+          <input id="search-input" type="text" placeholder="ค้นหา Report Inspect Field Instrument..."
             class="input input-bordered input-sm w-56 focus:w-72 transition-all duration-300 join-item" />
           <button class="btn btn-sm btn-primary join-item" onclick="handleSearch()">
             <i class="fa-solid fa-magnifying-glass text-xs"></i>
           </button>
         </div>
       </div>
-      <a href="createform_localgauge.html" class="btn btn-primary btn-sm gap-2 shadow-md shadow-primary/25">
+      <a href="createform_reportinspectfieldinstrument.html" class="btn btn-primary btn-sm gap-2 shadow-md shadow-primary/25">
         <i class="fa-solid fa-plus"></i>
-        <span class="hidden sm:inline">เพิ่มข้อมูล Local Gauge</span>
+        <span class="hidden sm:inline">เพิ่มข้อมูล Report Inspect Field Instrument</span>
       </a>
       <a href="main.html" class="btn btn-primary btn-sm gap-2 shadow-md shadow-primary/25">
         <span class="hidden sm:inline">Back to Home</span>
@@ -223,6 +223,17 @@
     </div>
   </div>
 
+      <!-- ===== LOADING กำลังโหลดข้อมูล ===== -->
+    <div id="loading" class="flex flex-col items-center justify-center py-20">
+      <div class="relative">
+        <div class="w-16 h-16 border-4 border-success/20 rounded-full animate-spin border-t-success"></div>
+        <i
+          class="fa-solid fa-flask absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-success text-lg"></i>
+      </div>
+      <p class="mt-4 text-slate-500 font-medium animate-pulse">กำลังโหลดข้อมูล Inspection Report...</p>
+    </div>
+
+
   <div class="glass-card rounded-2xl border border-white/50 shadow-lg overflow-hidden mx-4 lg:mx-8">
     <div class="overflow-x-auto">
       <table id="data-table" class="table table-zebra w-full sticky-first-col">
@@ -232,31 +243,31 @@
               <i class="fa-solid fa-barcode mr-1 text-primary/60"></i> Tag Number
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-warehouse mr-1 text-primary/60"></i> Plant area
+              <i class="fa-solid fa-warehouse mr-1 text-primary/60"></i> Description
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Description
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Instrument Type
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Object Type
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Plant Area
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Class Type
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Work Order
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Subtype
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Remark
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Scale Range
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Overall Status
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Process Connection
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Inspect By
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Equipment Class
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Appvoed By
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase">
-              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Layer Of Protection
+              <i class="fa-solid fa-file-lines mr-1 text-primary/60"></i> Approved Date
             </th>
             <th class="text-xs text-slate-500 font-semibold uppercase text-center">
               <i class="fa-solid fa-gear mr-1 text-slate-400"></i> จัดการ
@@ -271,10 +282,10 @@
       <div class="bg-slate-100 p-6 rounded-full mb-4">
         <i class="fa-solid fa-gauge-high text-4xl text-slate-300"></i>
       </div>
-      <h3 class="text-lg font-bold text-slate-500">ยังไม่มีข้อมูล Local Gauge</h3>
-      <p class="text-sm text-slate-400 mt-1">เริ่มต้นเพิ่ม Local Gauge ตัวแรกของคุณ</p>
-      <a href="createform_localgauge.html" class="btn btn-primary btn-sm mt-4 gap-2">
-        <i class="fa-solid fa-plus"></i> เพิ่ม Local Gauge
+      <h3 class="text-lg font-bold text-slate-500">ยังไม่มีข้อมูล Field Instrument</h3>
+      <p class="text-sm text-slate-400 mt-1">เริ่มต้นเพิ่ม Field Instrument ตัวแรกของคุณ</p>
+      <a href="createreport_fieldinstrument.html" class="btn btn-primary btn-sm mt-4 gap-2">
+        <i class="fa-solid fa-plus"></i> เพิ่ม Field Instrument
       </a>
     </div>
   </div>
@@ -321,7 +332,7 @@
 
       <div class="bg-gradient-to-r from-primary to-secondary px-6 py-4 flex items-center justify-between flex-shrink-0">
         <h3 class="text-lg font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-gauge-high"></i> รายละเอียด Local Gauge
+          <i class="fa-solid fa-gauge-high"></i> รายละเอียด Field Instrument
         </h3>
         <form method="dialog">
           <button class="btn btn-sm btn-circle btn-ghost text-white hover:bg-white/20">
@@ -339,7 +350,6 @@
           <div class="flex-1 space-y-2">
             <div class="flex items-center gap-2">
               <span class="badge badge-primary badge-lg font-mono font-bold" id="detail-code">-</span>
-              <span id="detail-expiry-badge"></span>
             </div>
             <h2 class="text-xl font-bold text-slate-800" id="detail-description">-</h2>
           </div>
@@ -349,101 +359,74 @@
         <div class="grid grid-cols-1 sm:grid-cols-2 gap-3 pb-6">
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
             <div class="bg-info/10 text-info p-2.5 rounded-lg">
-              <i class="fa-solid fa-warehouse text-lg"></i>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Plant area</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-area">-</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
               <i class="fa-solid fa-cubes-stacked text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Object Type</p>
+              <p class="text-xs text-slate-400 font-medium">Instrument Type</p>
               <p class="text-sm font-semibold text-slate-700" id="detail-objecttype">-</p>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="bg-success/10 text-success p-2.5 rounded-lg">
+              <i class="fa-solid fa-warehouse text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Plant</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-area">-</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
             <div class="bg-warning/10 text-warning p-2.5 rounded-lg">
-              <i class="fa-solid fa-hourglass-half text-lg"></i>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Class Type</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-classtype">-</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
               <i class="fa-solid fa-file-lines text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Subtype</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-subtype">-</p>
+              <p class="text-xs text-slate-400 font-medium">Work Order</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-workorder">-</p>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
-              <i class="fa-solid fa-file-lines text-lg"></i>
+            <div class="bg-secondary/10 text-secondary p-2.5 rounded-lg">
+              <i class="fa-solid fa-comment-dots text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Scale Range</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-scalerange">-</p>
+              <p class="text-xs text-slate-400 font-medium">Remark</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-remark">-</p>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
-              <i class="fa-solid fa-file-lines text-lg"></i>
+            <div class="bg-accent/10 text-accent p-2.5 rounded-lg">
+              <i class="fa-solid fa-circle-check text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Process Connection</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-processconnection">-</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
-              <i class="fa-solid fa-file-lines text-lg"></i>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Equipment Class</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-equipmentclass">-</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-success/10 text-success p-2.5 rounded-lg">
-              <i class="fa-solid fa-file-lines text-lg"></i>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Layer Of Protection</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-layerofprotection">-</p>
+              <p class="text-xs text-slate-400 font-medium">Overall Status</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-overallstatus">-</p>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
             <div class="bg-primary/10 text-primary p-2.5 rounded-lg">
-              <i class="fa-solid fa-calendar-check text-lg"></i>
+              <i class="fa-solid fa-user-check text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Last action date</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-dateOfUse">-</p>
+              <p class="text-xs text-slate-400 font-medium">Inspect By</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-inspectby">-</p>
+            </div>
+          </div>
+          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
+            <div class="bg-success/10 text-success p-2.5 rounded-lg">
+              <i class="fa-solid fa-user-tie text-lg"></i>
+            </div>
+            <div>
+              <p class="text-xs text-slate-400 font-medium">Approved By</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-approvedby">-</p>
             </div>
           </div>
           <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
             <div class="bg-error/10 text-error p-2.5 rounded-lg">
-              <i class="fa-solid fa-calendar-xmark text-lg"></i>
+              <i class="fa-solid fa-calendar-check text-lg"></i>
             </div>
             <div>
-              <p class="text-xs text-slate-400 font-medium">Next due date</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-expiredDate">-</p>
-            </div>
-          </div>
-          <div class="flex items-start gap-3 bg-white rounded-xl p-4 border border-slate-100 shadow-sm">
-            <div class="bg-warning/10 text-warning p-2.5 rounded-lg">
-              <i class="fa-solid fa-file-shield text-lg"></i>
-            </div>
-            <div>
-              <p class="text-xs text-slate-400 font-medium">Specification sheet</p>
-              <p class="text-sm font-semibold text-slate-700" id="detail-specification">-</p>
+              <p class="text-xs text-slate-400 font-medium">Approved Date</p>
+              <p class="text-sm font-semibold text-slate-700" id="detail-approveddate">-</p>
             </div>
           </div>
         </div>
@@ -459,7 +442,7 @@
     <form method="dialog" class="modal-backdrop"><button>close</button></form>
   </dialog>
 
-  <script src="scriptlocalgauge.js"></script>
+  <script src="scriptreportinspectfieldinstrument.js"></script>
   <script src="permissions.js"></script>
 </body>
 </html>

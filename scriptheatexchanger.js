@@ -2,7 +2,7 @@
  
 // ⚠️ สำคัญมาก: นำ URL ที่ได้จากการ Deploy ในขั้นตอนที่ 2 มาวางที่นี่
 // คำแนะนำ: Deploy Google Apps Script แบบ "Anyone can access" แล้วนำ URL มาใส่ตรงนี้
-const ORIGINAL_URL = 'https://script.google.com/macros/s/AKfycbwSIYw2GZ-oYXuawLw-gjrB0CfIXSQwZQt-Ufkp1YeM0Iuzi-nooSYk4e_EoKsVkhw/exec';
+const ORIGINAL_URL = 'https://script.google.com/macros/s/AKfycbx9kIX5wokvSXXh573ro2k5WjMROssr6m9QOZ1Gj5EvqNk5chMSYPHI2bdUwq6oC09D/exec';
  
  
 // ใช้ URL โดยตรงจาก Google Apps Script
@@ -11,24 +11,34 @@ const WEB_APP_URL = ORIGINAL_URL;
 // --- DOM Elements: ประกาศตัวแปร ---
 const form = document.getElementById('data-form');
 const recordIdInput = document.getElementById('record-id');
-const materialCodeInput = document.getElementById('material_code');
-const descriptionInput = document.getElementById('description');
-const imageBeforeInput = document.getElementById('image-before');
-const keepingAreaInput = document.getElementById('keepingArea');
-const quantityInput = document.getElementById('quantity');
-const lifttimeInput = document.getElementById('lifttime');
-const leakageInput = document.getElementById('leakage');
-const failactionInput = document.getElementById('failaction');
-const objecttypeInput = document.getElementById('objecttype');
-const classtypeInput = document.getElementById('classtype');
-const scalerangeInput = document.getElementById('scalerange');
-const calibrationrangeInput = document.getElementById('calibrationrange');
-const outputrangeInput = document.getElementById('outputrange');
-const equipmentclassInput = document.getElementById('equipmentclass');
-const layerofprotectionInput = document.getElementById('layerofprotection');
-const dateOfUseInput = document.getElementById('dateOfUse');
-const expiredDateInput = document.getElementById('expiredDate');
-const msdsInput = document.getElementById('MSDS');
+const equipmentnumberInput = document.getElementById('equipmentnumber');
+const plantInput = document.getElementById('plant') || document.getElementById('keepingArea');
+const typedirectionInput = document.getElementById('typedirection');
+const typefrontendInput = document.getElementById('typefrontend');
+const typeshellInput = document.getElementById('typeshell');
+const typerearendInput = document.getElementById('typerearend');
+const weightallkgInput = document.getElementById('weightallkg');
+const weightbundlekgInput = document.getElementById('weightbundlekg');
+const insulationshellsideInput = document.getElementById('insulationshellside');
+const insylationtubesideInput = document.getElementById('insylationtubeside');
+const bundledescriptiondiameterInput = document.getElementById('bundledescriptiondiameter');
+const bundledescriptionlengthInput = document.getElementById('bundledescriptionlength');
+const tubedescriptionoutsidediameterInput = document.getElementById('tubedescriptionoutsidediameter');
+const tubedescriptionthicknessInput = document.getElementById('tubedescriptionthickness');
+const tubedescriptionlengthInput = document.getElementById('tubedescriptionlength');
+const tubedescriptionquantityInput = document.getElementById('tubedescriptionquantity');
+const nozzleshellsideinletsizeInput = document.getElementById('nozzleshellsideinletsize');
+const nozzleshellsideinletpsiInput = document.getElementById('nozzleshellsideinletpsi');
+const nozzleshellsideoutletsizeInput = document.getElementById('nozzleshellsideoutletsize');
+const nozzleshellsideoutletpsiInput = document.getElementById('nozzleshellsideoutletpsi');
+const nozzletubesideinletsizeInput = document.getElementById('nozzletubesideinletsize');
+const nozzletubesideinletpsiInput = document.getElementById('nozzletubesideinletpsi');
+const nozzletubesideoutletsizeInput = document.getElementById('nozzletubesideoutletsize');
+const nozzletubesideoutletpsiInput = document.getElementById('nozzletubesideoutletpsi');
+const cranetonInput = document.getElementById('craneton');
+const cranedayInput = document.getElementById('craneday');
+const neutralizeshellsideInput = document.getElementById('neutralizeshellside');
+const neutralizetubesideInput = document.getElementById('neutralizetubeside');
 const submitBtn = document.getElementById('submit-btn');
 const cancelBtn = document.getElementById('cancel-btn');
 const tableBody = document.getElementById('table-body');
@@ -52,23 +62,6 @@ const showingStart = document.getElementById('showing-start');
 const showingEnd = document.getElementById('showing-end');
 const totalItems = document.getElementById('total-items');
  
-// --- Image Preview Functions ---
-imageBeforeInput?.addEventListener('input', function () {
-  previewImage(this.value, 'preview-before', 'img-before');
-});
- 
-function previewImage(url, previewId, imgId) {
-  const preview = document.getElementById(previewId);
-  const img = document.getElementById(imgId);
-  if (!preview || !img) return;
- 
-  if (url && isValidUrl(url)) {
-    img.src = url;
-    preview.classList.remove('hidden');
-  } else {
-    preview.classList.add('hidden');
-  }
-}
  
 function isValidUrl(string) {
   try {
@@ -127,12 +120,14 @@ function updateStats() {
   const areasSet = new Set();
  
   allData.forEach(row => {
-    const days = daysUntil(row.ExpiredDate);
-    if (days !== null) {
-      if (days < 0) expired++;
-      else if (days <= 30) expiring++;
+    if (row.ExpiredDate) {
+      const days = daysUntil(row.ExpiredDate);
+      if (days !== null) {
+        if (days < 0) expired++;
+        else if (days <= 30) expiring++;
+      }
     }
-    const area = (row.KeepingArea || '').trim();
+    const area = (row.plant || row.KeepingArea || '').trim();
     if (area) areasSet.add(area);
   });
  
@@ -179,11 +174,40 @@ function applyFilters() {
   filteredData = allData.filter(row => {
     // Search
     if (query) {
-      const searchFields = [row.MaterialCode, row.Description, row.KeepingArea, row.objecttype, row.classtype, row.scalerange, row.calibrationrange, row.outputrange, row.equipmentclass, row.layerofprotection, row.MSDS].map(v => String(v || '').toLowerCase());
+      const searchFields = [
+        row.equipmentnumber,
+        row.plant,
+        row.typedirection,
+        row.typefrontend,
+        row.typeshell,
+        row.typerearend,
+        row.weightallkg,
+        row.weightbundlekg,
+        row.insulationshellside,
+        row.insylationtubeside,
+        row.bundledescriptiondiameter,
+        row.bundledescriptionlength,
+        row.tubedescriptionoutsidediameter,
+        row.tubedescriptionthickness,
+        row.tubedescriptionlength,
+        row.tubedescriptionquantity,
+        row.nozzleshellsideinletsize,
+        row.nozzleshellsideinletpsi,
+        row.nozzleshellsideoutletsize,
+        row.nozzleshellsideoutletpsi,
+        row.nozzletubesideinletsize,
+        row.nozzletubesideinletpsi,
+        row.nozzletubesideoutletsize,
+        row.nozzletubesideoutletpsi,
+        row.craneton,
+        row.craneday,
+        row.neutralizeshellside,
+        row.neutralizetubeside
+      ].map(v => String(v || '').toLowerCase());
       if (!searchFields.some(f => f.includes(query))) return false;
     }
     // Area filter
-    if (areaFilter && (row.KeepingArea || '').trim() !== areaFilter) return false;
+    if (areaFilter && ((row.plant || row.KeepingArea || '').trim() !== areaFilter)) return false;
     // Status filter
     if (statusFilter) {
       const days = daysUntil(row.ExpiredDate);
@@ -225,15 +249,6 @@ async function fetchData() {
  
     if (result.success) {
       allData = result.data;
- 
-      // เรียงข้อมูลแบบ Descending (ใหม่สุดอยู่บน) โดยใช้ Timestamp
-      // เพื่อให้รายการที่เพิ่งบันทึกล่าสุดแสดงเป็นรายการแรกเสมอ
-      allData.sort((a, b) => {
-        const dateA = new Date(a.Timestamp || 0);
-        const dateB = new Date(b.Timestamp || 0);
-        return dateB - dateA; // DESC: ใหม่สุดก่อน
-      });
- 
       filteredData = [...allData];
       totalPages = Math.max(1, Math.ceil(filteredData.length / itemsPerPage));
       currentPage = 1;
@@ -285,83 +300,89 @@ function renderTable() {
     const tr = document.createElement('tr');
     tr.className = 'table-row-hover transition-colors';
  
-    const imgSrc = row.ImageBefore || row['ImageBefore '] || noImageUrl;
-    const msdsVal = (row.MSDS || '').trim();
-    let msdsLink;
-    if (msdsVal && msdsVal.toLowerCase() !== 'na') {
-      msdsLink = `<a href="${escapeHtml(msdsVal)}" target="_blank" class="btn btn-xs btn-outline btn-warning gap-1">
-           <i class="fa-solid fa-file-shield text-[10px]"></i> ดู Specification
-         </a>`;
-    } else if (msdsVal.toLowerCase() === 'na') {
-      msdsLink = '<span class="badge badge-ghost badge-sm">NA</span>';
-    } else {
-      msdsLink = '<span class="text-slate-300 text-xs">-</span>';
-    }
- 
     tr.innerHTML = `
-      <td class="font-mono font-semibold text-primary text-sm">${escapeHtml(row.MaterialCode || '-')}</td>
-      <td>
-        <div class="avatar">
-          <div class="w-12 h-12 rounded-lg ring-1 ring-slate-200 cursor-pointer hover:ring-primary transition-all"
-               onclick="showImageModal('${escapeAttr(imgSrc)}')">
-            <img src="${escapeAttr(imgSrc)}" alt="Chemical" onerror="this.src='${noImageUrl}'" />
-          </div>
-        </div>
-      </td>
+      <td class="font-mono font-semibold text-primary text-sm">${escapeHtml(row.equipmentnumber || '-')}</td>
       <td>
         <span class="badge badge-outline badge-secondary badge-sm gap-1">
-          <i class="fa-solid fa-location-dot text-[10px]"></i> ${escapeHtml(row.KeepingArea || '-')}
+          <i class="fa-solid fa-location-dot text-[10px]"></i> ${escapeHtml(row.plant || row.KeepingArea || '-')}
         </span>
       </td>
-
-      <td class="font-semibold text-sm">${escapeHtml(row.Description || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.objecttype || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.classtype || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.scalerange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.calibrationrange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.outputrange || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.equipmentclass || '-')}</td>
-      <td class="font-semibold text-sm">${escapeHtml(row.layerofprotection || '-')}</td>
-      <td>${getExpiryBadge(row.ExpiredDate)}</td>
-      <td>${msdsLink}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.typedirection || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.typefrontend || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.typeshell || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.typerearend || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.bundledescriptiondiameter || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.bundledescriptionlength || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.tubedescriptionoutsidediameter || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.tubedescriptionthickness || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.tubedescriptionlength || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.tubedescriptionquantity || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.craneton || '-')}</td>
+      <td class="font-semibold text-sm">${escapeHtml(row.craneday || '-')}</td>
       <td class="text-right">
         <div class="flex justify-end gap-1">
           <button class="view-btn btn btn-xs btn-ghost text-info tooltip tooltip-left" data-tip="ดูรายละเอียด"
                   data-id="${escapeAttr(row.ID)}"
-                  data-material-code="${escapeAttr(row.MaterialCode || '')}"
-                  data-description="${escapeAttr(row.Description || '')}"
-                  data-image-before="${escapeAttr(row.ImageBefore || row['ImageBefore '] || '')}"
-                  data-keeping-area="${escapeAttr(row.KeepingArea || '')}"
-                  data-objecttype="${escapeAttr(row.objecttype || '')}"
-                  data-classtype="${escapeAttr(row.classtype || '')}"
-                  data-scalerange="${escapeAttr(row.scalerange || '')}"
-                  data-calibrationrange="${escapeAttr(row.calibrationrange || '')}"
-                  data-outputrange="${escapeAttr(row.outputrange || '')}"
-                  data-equipmentclass="${escapeAttr(row.equipmentclass || '')}"
-                  data-layerofprotection="${escapeAttr(row.layerofprotection || '')}"
-                  data-date-of-use="${escapeAttr(toInputDate(row.DateOfUse))}"
-                  data-expired-date="${escapeAttr(toInputDate(row.ExpiredDate))}"
-                  data-msds="${escapeAttr(row.MSDS || '')}"
-                  data-timestamp="${escapeAttr(row.Timestamp || '')}">
+                  data-equipmentnumber="${escapeAttr(row.equipmentnumber || '')}"
+                  data-plant="${escapeAttr(row.plant || row.KeepingArea || '')}"
+                  data-typedirection="${escapeAttr(row.typedirection || '')}"
+                  data-typefrontend="${escapeAttr(row.typefrontend || '')}"
+                  data-typeshell="${escapeAttr(row.typeshell || '')}"
+                  data-typerearend="${escapeAttr(row.typerearend || '')}"
+                  data-weightallkg="${escapeAttr(row.weightallkg || '')}"
+                  data-weightbundlekg="${escapeAttr(row.weightbundlekg || '')}"
+                  data-insulationshellside="${escapeAttr(row.insulationshellside || '')}"
+                  data-insylationtubeside="${escapeAttr(row.insylationtubeside || '')}"
+                  data-bundledescriptiondiameter="${escapeAttr(row.bundledescriptiondiameter || '')}"
+                  data-bundledescriptionlength="${escapeAttr(row.bundledescriptionlength || '')}"
+                  data-tubedescriptionoutsidediameter="${escapeAttr(row.tubedescriptionoutsidediameter || '')}"
+                  data-tubedescriptionthickness="${escapeAttr(row.tubedescriptionthickness || '')}"
+                  data-tubedescriptionlength="${escapeAttr(row.tubedescriptionlength || '')}"
+                  data-tubedescriptionquantity="${escapeAttr(row.tubedescriptionquantity || '')}"
+                  data-nozzleshellsideinletsize="${escapeAttr(row.nozzleshellsideinletsize || '')}"
+                  data-nozzleshellsideinletpsi="${escapeAttr(row.nozzleshellsideinletpsi || '')}"
+                  data-nozzleshellsideoutletsize="${escapeAttr(row.nozzleshellsideoutletsize || '')}"
+                  data-nozzleshellsideoutletpsi="${escapeAttr(row.nozzleshellsideoutletpsi || '')}"
+                  data-nozzletubesideinletsize="${escapeAttr(row.nozzletubesideinletsize || '')}"
+                  data-nozzletubesideinletpsi="${escapeAttr(row.nozzletubesideinletpsi || '')}"
+                  data-nozzletubesideoutletsize="${escapeAttr(row.nozzletubesideoutletsize || '')}"
+                  data-nozzletubesideoutletpsi="${escapeAttr(row.nozzletubesideoutletpsi || '')}"
+                  data-craneton="${escapeAttr(row.craneton || '')}"
+                  data-craneday="${escapeAttr(row.craneday || '')}"
+                  data-neutralizeshellside="${escapeAttr(row.neutralizeshellside || '')}"
+                  data-neutralizetubeside="${escapeAttr(row.neutralizetubeside || '')}">
             <i class="fa-solid fa-eye"></i>
           </button>
           ${canEdit() ? `
           <button class="edit-btn btn btn-xs btn-ghost text-primary tooltip tooltip-left" data-tip="แก้ไข"
-                  data-id="${escapeAttr(row.ID)}"
-                  data-material-code="${escapeAttr(row.MaterialCode || '')}"
-                  data-description="${escapeAttr(row.Description || '')}"
-                  data-image-before="${escapeAttr(row.ImageBefore || row['ImageBefore '] || '')}"
-                  data-keeping-area="${escapeAttr(row.KeepingArea || '')}"
-                  data-objecttype="${escapeAttr(row.objecttype || '')}"
-                  data-classtype="${escapeAttr(row.classtype || '')}"
-                  data-scalerange="${escapeAttr(row.scalerange || '')}"
-                  data-calibrationrange="${escapeAttr(row.calibrationrange || '')}"
-                  data-outputrange="${escapeAttr(row.outputrange || '')}"
-                  data-equipmentclass="${escapeAttr(row.equipmentclass || '')}"
-                  data-layerofprotection="${escapeAttr(row.layerofprotection || '')}"
-                  data-date-of-use="${escapeAttr(toInputDate(row.DateOfUse))}"
-                  data-expired-date="${escapeAttr(toInputDate(row.ExpiredDate))}"
-                  data-msds="${escapeAttr(row.MSDS || '')}">
+                  data-equipmentnumber="${escapeAttr(row.equipmentnumber || '')}"
+                  data-plant="${escapeAttr(row.plant || row.KeepingArea || '')}"
+                  data-typedirection="${escapeAttr(row.typedirection || '')}"
+                  data-typefrontend="${escapeAttr(row.typefrontend || '')}"
+                  data-typeshell="${escapeAttr(row.typeshell || '')}"
+                  data-typerearend="${escapeAttr(row.typerearend || '')}"
+                  data-weightallkg="${escapeAttr(row.weightallkg || '')}"
+                  data-weightbundlekg="${escapeAttr(row.weightbundlekg || '')}"
+                  data-insulationshellside="${escapeAttr(row.insulationshellside || '')}"
+                  data-insylationtubeside="${escapeAttr(row.insylationtubeside || '')}"
+                  data-bundledescriptiondiameter="${escapeAttr(row.bundledescriptiondiameter || '')}"
+                  data-bundledescriptionlength="${escapeAttr(row.bundledescriptionlength || '')}"
+                  data-tubedescriptionoutsidediameter="${escapeAttr(row.tubedescriptionoutsidediameter || '')}"
+                  data-tubedescriptionthickness="${escapeAttr(row.tubedescriptionthickness || '')}"
+                  data-tubedescriptionlength="${escapeAttr(row.tubedescriptionlength || '')}"
+                  data-tubedescriptionquantity="${escapeAttr(row.tubedescriptionquantity || '')}"
+                  data-nozzleshellsideinletsize="${escapeAttr(row.nozzleshellsideinletsize || '')}"
+                  data-nozzleshellsideinletpsi="${escapeAttr(row.nozzleshellsideinletpsi || '')}"
+                  data-nozzleshellsideoutletsize="${escapeAttr(row.nozzleshellsideoutletsize || '')}"
+                  data-nozzleshellsideoutletpsi="${escapeAttr(row.nozzleshellsideoutletpsi || '')}"
+                  data-nozzletubesideinletsize="${escapeAttr(row.nozzletubesideinletsize || '')}"
+                  data-nozzletubesideinletpsi="${escapeAttr(row.nozzletubesideinletpsi || '')}"
+                  data-nozzletubesideoutletsize="${escapeAttr(row.nozzletubesideoutletsize || '')}"
+                  data-nozzletubesideoutletpsi="${escapeAttr(row.nozzletubesideoutletpsi || '')}"
+                  data-craneton="${escapeAttr(row.craneton || '')}"
+                  data-craneday="${escapeAttr(row.craneday || '')}"
+                  data-neutralizeshellside="${escapeAttr(row.neutralizeshellside || '')}"
+                  data-neutralizetubeside="${escapeAttr(row.neutralizetubeside || '')}">
             <i class="fa-solid fa-pen-to-square"></i>
           </button>
           ` : ''}
@@ -384,23 +405,7 @@ function renderTable() {
         showPermissionDenied('แก้ไขข้อมูล');
         return;
       }
-      editRecord(
-        this.dataset.id,
-        this.dataset.materialCode,
-        this.dataset.description,
-        this.dataset.imageBefore,
-        this.dataset.keepingArea,
-        this.dataset.objecttype,
-        this.dataset.classtype,
-        this.dataset.scalerange,
-        this.dataset.calibrationrange,
-        this.dataset.outputrange,
-        this.dataset.equipmentclass,
-        this.dataset.layerofprotection,
-        this.dataset.dateOfUse,
-        this.dataset.expiredDate,
-        this.dataset.msds
-      );
+      editRecord(this.dataset);
     });
   });
  
@@ -443,20 +448,34 @@ if (form) {
     // เตรียมข้อมูล
     const params = {
       action: isUpdating ? 'update' : 'create',
-      materialCode: materialCodeInput?.value.trim() || '',
-      description: descriptionInput?.value.trim() || '',
-      imageBefore: imageBeforeInput?.value.trim() || '',
-      keepingArea: keepingAreaInput?.value.trim() || '',
-      objecttype: objecttypeInput?.value.trim() || '',
-      classtype: classtypeInput?.value.trim() || '',
-      scalerange: scalerangeInput?.value.trim() || '',
-      calibrationrange: calibrationrangeInput?.value.trim() || '',
-      outputrange: outputrangeInput?.value.trim() || '',
-      equipmentclass: equipmentclassInput?.value.trim() || '',
-      layerofprotection: layerofprotectionInput?.value.trim() || '',
-      dateOfUse: dateOfUseInput?.value || '',
-      expiredDate: expiredDateInput?.value || '',
-      msds: msdsInput?.value.trim() || ''
+      equipmentnumber: equipmentnumberInput?.value.trim() || '',
+      plant: plantInput?.value.trim() || '',
+      typedirection: typedirectionInput?.value.trim() || '',
+      typefrontend: typefrontendInput?.value.trim() || '',
+      typeshell: typeshellInput?.value.trim() || '',
+      typerearend: typerearendInput?.value.trim() || '',
+      weightallkg: weightallkgInput?.value.trim() || '',
+      weightbundlekg: weightbundlekgInput?.value.trim() || '',
+      insulationshellside: insulationshellsideInput?.value.trim() || '',
+      insylationtubeside: insylationtubesideInput?.value.trim() || '',
+      bundledescriptiondiameter: bundledescriptiondiameterInput?.value.trim() || '',
+      bundledescriptionlength: bundledescriptionlengthInput?.value.trim() || '',
+      tubedescriptionoutsidediameter: tubedescriptionoutsidediameterInput?.value.trim() || '',
+      tubedescriptionthickness: tubedescriptionthicknessInput?.value.trim() || '',
+      tubedescriptionlength: tubedescriptionlengthInput?.value.trim() || '',
+      tubedescriptionquantity: tubedescriptionquantityInput?.value.trim() || '',
+      nozzleshellsideinletsize: nozzleshellsideinletsizeInput?.value.trim() || '',
+      nozzleshellsideinletpsi: nozzleshellsideinletpsiInput?.value.trim() || '',
+      nozzleshellsideoutletsize: nozzleshellsideoutletsizeInput?.value.trim() || '',
+      nozzleshellsideoutletpsi: nozzleshellsideoutletpsiInput?.value.trim() || '',
+      nozzletubesideinletsize: nozzletubesideinletsizeInput?.value.trim() || '',
+      nozzletubesideinletpsi: nozzletubesideinletpsiInput?.value.trim() || '',
+      nozzletubesideoutletsize: nozzletubesideoutletsizeInput?.value.trim() || '',
+      nozzletubesideoutletpsi: nozzletubesideoutletpsiInput?.value.trim() || '',
+      craneton: cranetonInput?.value.trim() || '',
+      craneday: cranedayInput?.value.trim() || '',
+      neutralizeshellside: neutralizeshellsideInput?.value.trim() || '',
+      neutralizetubeside: neutralizetubesideInput?.value.trim() || ''
     };
  
     if (isUpdating) {
@@ -515,8 +534,8 @@ if (form) {
  
         resetForm();
  
-        // Redirect กลับไปหน้าหลัก
-        window.location.href = '01_fieldinstrument.html';
+        // Redirect กลับไปหน้าหลัก Heat Exchanger
+        window.location.href = '102_heatexchanger.html';
  
       } else {
         const errorMsg = result.message || 'ไม่สามารถบันทึกข้อมูลได้';
@@ -564,34 +583,44 @@ if (form) {
 }
  
 // 4. เตรียมฟอร์มสำหรับแก้ไข
-function editRecord(id, materialCode, description, imageBefore, keepingArea, objecttype, classtype, scalerange, calibrationrange, outputrange, equipmentclass, layerofprotection, dateOfUse, expiredDate, msds) {
+function editRecord(record) {
   // ถ้าอยู่หน้า index ให้ redirect ไปหน้า createForm โดยเก็บข้อมูลใน sessionStorage
   // (ไม่ใช้ query params เพราะข้อมูลเช่น base64 image ทำให้ URL ยาวเกินไป → 431 error)
   if (!form) {
-    sessionStorage.setItem('editRecord', JSON.stringify({
-      id, materialCode, description, imageBefore, keepingArea, objecttype, classtype, scalerange, calibrationrange, outputrange, equipmentclass, layerofprotection, dateOfUse, expiredDate, msds
-    }));
-    window.location.href = 'createform_filedinstrument.html?edit=1';
+    sessionStorage.setItem('editRecord', JSON.stringify(record));
+    window.location.href = 'createform_heatexchanger.html?edit=1';
     return;
   }
  
-  recordIdInput.value = id;
-  if (materialCodeInput) materialCodeInput.value = materialCode || '';
-  if (descriptionInput) descriptionInput.value = description || '';
-  if (imageBeforeInput) imageBeforeInput.value = imageBefore || '';
-  if (keepingAreaInput) keepingAreaInput.value = keepingArea || '';
-  if (objecttypeInput) objecttypeInput.value = objecttype || '';
-  if (classtypeInput) classtypeInput.value = classtype || '';
-  if (scalerangeInput) scalerangeInput.value = scalerange || '';
-  if (calibrationrangeInput) calibrationrangeInput.value = calibrationrange || '';
-  if (outputrangeInput) outputrangeInput.value = outputrange || '';
-  if (equipmentclassInput) equipmentclassInput.value = equipmentclass || '';
-  if (layerofprotectionInput) layerofprotectionInput.value = layerofprotection || '';
-  if (dateOfUseInput) dateOfUseInput.value = toInputDate(dateOfUse) || dateOfUse || '';
-  if (expiredDateInput) expiredDateInput.value = toInputDate(expiredDate) || expiredDate || '';
-  if (msdsInput) msdsInput.value = msds || '';
- 
-  if (imageBefore) previewImage(imageBefore, 'preview-before', 'img-before');
+  recordIdInput.value = record.id || record.ID || '';
+  if (equipmentnumberInput) equipmentnumberInput.value = record.equipmentnumber || '';
+  if (plantInput) plantInput.value = record.plant || record.Plant || record.KeepingArea || '';
+  if (typedirectionInput) typedirectionInput.value = record.typedirection || '';
+  if (typefrontendInput) typefrontendInput.value = record.typefrontend || '';
+  if (typeshellInput) typeshellInput.value = record.typeshell || '';
+  if (typerearendInput) typerearendInput.value = record.typerearend || '';
+  if (weightallkgInput) weightallkgInput.value = record.weightallkg || '';
+  if (weightbundlekgInput) weightbundlekgInput.value = record.weightbundlekg || '';
+  if (insulationshellsideInput) insulationshellsideInput.value = record.insulationshellside || '';
+  if (insylationtubesideInput) insylationtubesideInput.value = record.insylationtubeside || '';
+  if (bundledescriptiondiameterInput) bundledescriptiondiameterInput.value = record.bundledescriptiondiameter || '';
+  if (bundledescriptionlengthInput) bundledescriptionlengthInput.value = record.bundledescriptionlength || '';
+  if (tubedescriptionoutsidediameterInput) tubedescriptionoutsidediameterInput.value = record.tubedescriptionoutsidediameter || '';
+  if (tubedescriptionthicknessInput) tubedescriptionthicknessInput.value = record.tubedescriptionthickness || '';
+  if (tubedescriptionlengthInput) tubedescriptionlengthInput.value = record.tubedescriptionlength || '';
+  if (tubedescriptionquantityInput) tubedescriptionquantityInput.value = record.tubedescriptionquantity || '';
+  if (nozzleshellsideinletsizeInput) nozzleshellsideinletsizeInput.value = record.nozzleshellsideinletsize || '';
+  if (nozzleshellsideinletpsiInput) nozzleshellsideinletpsiInput.value = record.nozzleshellsideinletpsi || '';
+  if (nozzleshellsideoutletsizeInput) nozzleshellsideoutletsizeInput.value = record.nozzleshellsideoutletsize || '';
+  if (nozzleshellsideoutletpsiInput) nozzleshellsideoutletpsiInput.value = record.nozzleshellsideoutletpsi || '';
+  if (nozzletubesideinletsizeInput) nozzletubesideinletsizeInput.value = record.nozzletubesideinletsize || '';
+  if (nozzletubesideinletpsiInput) nozzletubesideinletpsiInput.value = record.nozzletubesideinletpsi || '';
+  if (nozzletubesideoutletsizeInput) nozzletubesideoutletsizeInput.value = record.nozzletubesideoutletsize || '';
+  if (nozzletubesideoutletpsiInput) nozzletubesideoutletpsiInput.value = record.nozzletubesideoutletpsi || '';
+  if (cranetonInput) cranetonInput.value = record.craneton || ''; 
+  if (cranedayInput) cranedayInput.value = record.craneday || '';
+  if (neutralizeshellsideInput) neutralizeshellsideInput.value = record.neutralizeshellside || '';
+  if (neutralizetubesideInput) neutralizetubesideInput.value = record.neutralizetubeside || '';
  
   if (submitBtn) submitBtn.innerHTML = '<i class="fa-solid fa-floppy-disk"></i> อัปเดตข้อมูล';
   if (cancelBtn) cancelBtn.classList.remove('hidden');
@@ -606,23 +635,7 @@ if (form) {
     if (saved) {
       try {
         const data = JSON.parse(saved);
-        editRecord(
-          data.id,
-          data.materialCode,
-          data.description,
-          data.imageBefore,
-          data.keepingArea,
-          data.objecttype,
-          data.classtype,
-          data.scalerange,
-          data.calibrationrange,
-          data.outputrange,
-          data.equipmentclass,
-          data.layerofprotection,
-          data.dateOfUse,
-          data.expiredDate,
-          data.msds
-        );
+        editRecord(data);
         sessionStorage.removeItem('editRecord');
       } catch (e) {
         console.error('Error parsing edit data:', e);
@@ -635,7 +648,7 @@ if (form) {
 async function deleteRecord(id) {
   const result = await Swal.fire({
     title: 'ยืนยันการลบ',
-    html: '<p class="text-slate-500">คุณต้องการลบข้อมูล Field Instrumentนี้ใช่หรือไม่?</p><p class="text-xs text-red-400 mt-2">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>',
+    html: '<p class="text-slate-500">คุณต้องการลบข้อมูล Heat Exchanger นี้ใช่หรือไม่?</p><p class="text-xs text-red-400 mt-2">การดำเนินการนี้ไม่สามารถย้อนกลับได้</p>',
     icon: 'warning',
     showCancelButton: true,
     confirmButtonColor: '#ef4444',
@@ -819,56 +832,52 @@ document.addEventListener('DOMContentLoaded', function() {
   fetchData();
 });
  
-// ฟังก์ชันแสดงรายละเอียด Field Instrument
+// ฟังก์ชันแสดงรายละเอียด Pump REDV
 function viewRecord(data) {
   const modal = document.getElementById('detail-modal');
   if (!modal) return;
  
-  const noImg = 'images/noimage.svg';
   const setEl = (id, val) => { const el = document.getElementById(id); if (el) el.textContent = val || '-'; };
   const setHtml = (id, html) => { const el = document.getElementById(id); if (el) el.innerHTML = html; };
  
-  // Image
-  const imgEl = document.getElementById('detail-image');
-  if (imgEl) {
-    imgEl.src = data.imageBefore || noImg;
-    imgEl.onerror = function () { this.src = noImg; };
-  }
- 
   // Basic info
-  setEl('detail-code', data.materialCode || '-');
-  setEl('detail-description', data.description || '-');
-  setEl('detail-area', data.keepingArea || '-');
-  // setEl('detail-quantity', data.quantity || '-'); // Commented out in HTML
-  // setEl('detail-lifttime', data.lifttime || '-'); // Commented out in HTML
-  // setEl('detail-leakage', data.leakage || '-'); // Commented out in HTML
-  // setEl('detail-failaction', data.failaction || '-'); // Commented out in HTML
-  setEl('detail-objecttype', data.objecttype || '-');
-  setEl('detail-classtype', data.classtype || '-');
-  setEl('detail-scalerange', data.scalerange || '-');
-  setEl('detail-calibrationrange', data.calibrationrange || '-');
-  setEl('detail-outputrange', data.outputrange || '-');
-  setEl('detail-equipmentclass', data.equipmentclass || '-');
-  setEl('detail-layerofprotection', data.layerofprotection || '-');
-  setEl('detail-dateOfUse', formatDate(data.dateOfUse));
-  setEl('detail-expiredDate', formatDate(data.expiredDate));
-  setEl('detail-timestamp', data.timestamp ? formatDate(data.timestamp) : '-');
- 
+  setEl('detail-code', data.equipmentnumber || '-');
+  setEl('detail-description', data.typeshell || '-');
+
+  // Basic Information
+  setEl('detail-id', data.ID || data.id || '-');
+  setEl('detail-equipmentnumber', data.equipmentnumber || '-');
+  setEl('detail-plant', data.plant || '-');
+  setEl('detail-typedirection', data.typedirection || '-');
+
+  // Heat Exchanger Details
+  setEl('detail-typefrontend', data.typefrontend || '-');
+  setEl('detail-typeshell', data.typeshell || '-');
+  setEl('detail-typerearend', data.typerearend || '-');
+  setEl('detail-weightallkg', data.weightallkg || '-');
+  setEl('detail-weightbundlekg', data.weightbundlekg || '-');
+  setEl('detail-insulationshellside', data.insulationshellside || '-');
+  setEl('detail-insylationtubeside', data.insylationtubeside || '-');
+  setEl('detail-bundledescriptiondiameter', data.bundledescriptiondiameter || '-');
+  setEl('detail-bundledescriptionlength', data.bundledescriptionlength || '-');
+  setEl('detail-tubedescriptionoutsidediameter', data.tubedescriptionoutsidediameter || '-');
+  setEl('detail-tubedescriptionthickness', data.tubedescriptionthickness || '-');
+  setEl('detail-tubedescriptionlength', data.tubedescriptionlength || '-');
+  setEl('detail-tubedescriptionquantity', data.tubedescriptionquantity || '-');
+  setEl('detail-nozzleshellsideinletsize', data.nozzleshellsideinletsize || '-');
+  setEl('detail-nozzleshellsideinletpsi', data.nozzleshellsideinletpsi || '-');
+  setEl('detail-nozzleshellsideoutletsize', data.nozzleshellsideoutletsize || '-');
+  setEl('detail-nozzleshellsideoutletpsi', data.nozzleshellsideoutletpsi || '-');
+  setEl('detail-nozzletubesideinletsize', data.nozzletubesideinletsize || '-');
+  setEl('detail-nozzletubesideinletpsi', data.nozzletubesideinletpsi || '-');
+  setEl('detail-nozzletubesideoutletsize', data.nozzletubesideoutletsize || '-');
+  setEl('detail-nozzletubesideoutletpsi', data.nozzletubesideoutletpsi || '-');
+  setEl('detail-craneton', data.craneton || '-');
+  setEl('detail-craneday', data.craneday || '-');
+  setEl('detail-neutralizeshellside', data.neutralizeshellside || '-');
+  setEl('detail-neutralizetubeside', data.neutralizetubeside || '-');
   // Expiry badge
   setHtml('detail-expiry-badge', getExpiryBadge(data.expiredDate));
- 
-  // MSDS
-  const msdsVal = (data.msds || '').trim();
-  if (msdsVal && msdsVal.toLowerCase() !== 'na') {
-    setHtml('detail-msds',
-      `<a href="${escapeAttr(msdsVal)}" target="_blank" class="link link-primary text-sm gap-1">
-         <i class="fa-solid fa-arrow-up-right-from-square text-[10px]"></i> เปิดเอกสาร
-       </a>`);
-  } else if (msdsVal.toLowerCase() === 'na') {
-    setEl('detail-msds', 'NA');
-  } else {
-    setEl('detail-msds', 'ไม่มี');
-  }
  
   modal.showModal();
 }
